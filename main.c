@@ -15,6 +15,11 @@ int main(int argc, char **argv)
   // Get current rank
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+  num_sets = 4;
+  N = 64;
+  gen_div_factor = 0.2;
+
+  
   // Generate the sets
 
   // Compute the conflict scores
