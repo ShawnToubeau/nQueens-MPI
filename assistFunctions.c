@@ -109,12 +109,12 @@ void printBoard(int N, int *board)
     printf("\n");
 }
 
-int main(int argc, char **argv) {
-    // test
-    int N = 4;
-    int board[4] = { 1, 1, 1, 1 };
+// int main(int argc, char **argv) {
+//     // test
+//     int N = 4;
+//     int board[4] = { 1, 1, 1, 1 };
 
-    int conflictScore = computeConflictScore(N, board);
-    printf("Conflict score is: %d\n", conflictScore);
-    return 0;
-}
+//     int conflictScore = computeConflictScore(N, board);
+//     printf("Conflict score is: %d\n", conflictScore);
+//     return 0;
+// }
