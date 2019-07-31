@@ -1,12 +1,16 @@
 #ifndef AF_H_ /* Include guard */
 #define AF_H_
 
-int sum(int arr[], int n);
+// Used in mutate.c
+int max(int N, int* l);
+int getIndex(int N, int* l, int m);
+double randDouble();
 
-int computeConflictScore(int N, int *board);
+// Used in conflict.c
+int sum(int n, int *arr);
 
-int computeRandMutation(int N, int *board);
-
+// Used in test.c
 void printBoard(int N, int *board);
+void fillRandom (int N, int* board);
 
 #endif

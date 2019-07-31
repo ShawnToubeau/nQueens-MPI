@@ -2,25 +2,7 @@
 #include <stdlib.h>
 #include "mutate.h"
 #include "conflict.h"
-
-int max(int N, int* l) {
-  int m = INT8_MIN;
-  for (int i = 0; i < N; i++) {
-    if (l[i] > m) m = l[i];
-  }
-  return m;
-}
-
-int getIndex(int N, int* l, int m) {
-  int i = -1;
-  for (int j = 0; j < N; j++) {
-    if (l[j] == m) {
-      i = j;
-      break;
-    }
-  }
-  return i;
-}
+#include "assistFunctions.h"
 
 /*
   Unused in favor of mutateMaxConflict
@@ -129,8 +111,4 @@ int** crossoverRandomSplit(int N, int* board1, int* board2, double r) {
   }
 
   return res;
-}
-
-double randDouble() {
-  return (double)rand()/(double)RAND_MAX;
 }
