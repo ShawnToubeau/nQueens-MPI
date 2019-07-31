@@ -4,46 +4,23 @@
 #include "mutate.h"
 #include "conflict.h"
 #include "test.h"
+#include "assistFunctions.h"
 
 int main(int argc, char **argv) {
 
   srand(time(0));
 
-  // testCrossoverRandomSplit();
+  testCrossoverRandomSplit();
 
-  // testGetConflictsPerQueen();
+  testGetConflictsPerQueen();
+  testComputeConflictScore();
 
-  // testMax();
-  // testGetIndex();
+  testMax();
+  testGetIndex();
 
-  // testMutate();
-  // testMutateMaxConflict();
-  // testMutateTrulyRandom();
-}
-
-void printBoard (int N, int* board) {
-  printf("\n");
-  for (int i = 0; i < N; ++i)
-  {
-    printf("[");
-    for (int j = 0; j < N; ++j)
-    {
-      if (board[i] == j) {
-        printf("Q");
-      } else {
-        printf("+");
-      }
-    }
-    printf("]\n");
-  }
-  printf("\n");
-}
-
-void fillRandom (int N, int* board) {
-  for (int i = 0; i < N; ++i)
-  {
-    board[i] = rand() % N;
-  }
+  testMutate();
+  testMutateMaxConflict();
+  testMutateTrulyRandom();
 }
 
 void testCrossoverRandomSplit() {
@@ -94,6 +71,15 @@ void testGetConflictsPerQueen() {
   }
 }
 
+void testComputeConflictScore() {
+  int N = 4;
+  int board[4] = { 0, 0, 0, 0 };
+
+  int conflictScore = computeConflictScore(N, board);
+  printBoard(N, board);
+  printf("Conflict score: %d\n", conflictScore);
+}
+
 void testMax() {
   int l[5] = { 0, 99, 15, -23, 100 };
 
@@ -108,6 +94,14 @@ void testGetIndex() {
   int i = getIndex(5, l, 15);
 
   printf("Index is: %d\n", i);
+}
+
+void testSum() {
+  int l[5] = { 1, 2, 3, 4, 5 };
+
+  int s = sum(5, l);
+
+  printf("Sum is: %d\n", s);
 }
 
 void testMutate() {
