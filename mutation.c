@@ -2,11 +2,43 @@
 #include <stdlib.h>
 #include <time.h>
 
+/*
+  This method will mutate the board reference passed to it directly.
+ */
 void mutateTrulyRandom(int N, int* board) {
   int i = rand() % N;
   int c = rand() % N;
   
   board[i] = c;
+}
+
+/*
+  This method will not mutate the board references passed to it. Instead
+  it will return two new boards identicle in size too the ones passed in.
+ */
+int** crossoverRandomSplit(int N, int* board1, int* board2, double r) {
+  int** res = (int **)malloc(2 * N * sizeof(int));
+  res[0] = (int *)malloc(N * sizeof(int));
+  res[1] = (int *)malloc(N * sizeof(int));
+
+  // default to 0.15
+  if (r < 0) {
+    r = 0.15;
+  }
+
+  int splitIndex = rand() % N;
+
+  for (int i = 0; i < N; i++) {
+    if (i < splitIndex) {
+      res[0][i] = board1[i];
+      res[1][i] = board2[i];
+    } else {
+      res[0][i] = board2[i];
+      res[1][i] = board1[i];
+    }
+  }
+
+  return res;
 }
 
 void printBoard (int N, int* board) {
@@ -34,10 +66,7 @@ void fillRandom (int N, int* board) {
   }
 }
 
-int main(int argc, char **argv) {
-
-  srand(time(0));
-
+void testMutateTrulyRandom() {
   int N = 4;
 
   // Allocate
@@ -55,4 +84,50 @@ int main(int argc, char **argv) {
     printf("After Mutation %d:\n", i);
     printBoard(N, board);
   }
+
+  free(board);
+}
+
+void testCrossoverRandomSplit() {
+  int N = 4;
+
+  // Allocate
+  int *board1 = malloc(N * sizeof(int));
+  int *board2 = malloc(N * sizeof(int));
+  int** res = (int **)malloc(2 * N * sizeof(int));
+  res[0] = (int *)malloc(N * sizeof(int));
+  res[1] = (int *)malloc(N * sizeof(int));
+
+  // Assign
+  fillRandom(N, board1);
+  fillRandom(N, board2);
+
+  // Print before
+  printf("Before Crossover Random Split:\n");
+  printf("Board 1:\n");
+  printBoard(N, board1);
+  printf("Board 2:\n");
+  printBoard(N, board2);
+
+  res = crossoverRandomSplit(N, board1, board2, 0);
+
+  printf("After Crossover Random Split:\n");
+  printf("Result 1:\n");
+  printBoard(N, res[0]);
+  printf("Result 2:\n");
+  printBoard(N, res[1]);
+
+  free(board1);
+  free(board2);
+  free(res[0]);
+  free(res[1]);
+  free(res);
+}
+
+int main(int argc, char **argv) {
+
+  srand(time(0));
+
+  testMutateTrulyRandom();
+  testCrossoverRandomSplit();
 }
