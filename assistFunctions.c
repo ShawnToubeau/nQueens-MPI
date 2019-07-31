@@ -45,6 +45,10 @@ int computeConflictScore(int x, int y, int** board) {
     return conflictScore/2;
 }
 
+int computeRandMutation(int x, int y,, int** board) {
+    return 0;
+}
+
 int main() {
     return 0;
 }
