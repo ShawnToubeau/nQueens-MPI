@@ -1,22 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-// #include "mpi.h"
+#include "assistFunctions.c"
+#include "mpi.h"
 
 // Calculates the conflict scores of a chess board
-int computeConflictScores(int N, int board[N][N])
-{
-  // This is temp
-  for (size_t i = 0; i < N; ++i)
-  {
-    for (size_t j = 0; j < N; ++j)
-    {
-      printf(" %d", board[i][j]);
-    }
-    printf("\n");
-  }
-  return 1;
-}
+// int computeConflictScores(int N, int board[N][N])
+// {
+//   // This is temp
+//   for (size_t i = 0; i < N; ++i)
+//   {
+//     for (size_t j = 0; j < N; ++j)
+//     {
+//       printf(" %d", board[i][j]);
+//     }
+//     printf("\n");
+//   }
+//   return 1;
+// }
 
 int main(int argc, char **argv)
 {
@@ -25,11 +26,11 @@ int main(int argc, char **argv)
   int rank, totalRanks, num_sets, N;
   double gen_div_factor;
   // Initialize MPI
-  // MPI_Init(&argc, &argv);
+  MPI_Init(&argc, &argv);
   // Get total number of ranks
-  // MPI_Comm_size(MPI_COMM_WORLD, &totalRanks);
+  MPI_Comm_size(MPI_COMM_WORLD, &totalRanks);
   // Get current rank
-  // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // Number of chess boards
   num_sets = 4;
@@ -75,7 +76,7 @@ int main(int argc, char **argv)
   // Populates conflict score array
   for (int i = 0; i < num_sets; i++)
   {
-    conflict_scores[i] = computeConflictScores(N, sets[i]);
+    conflict_scores[i] = computeConflictScores(N, N, sets[i]);
   }
 
   // Prints conflict scores
@@ -93,6 +94,6 @@ int main(int argc, char **argv)
 
   // end while
 
-  // MPI_Finalize();
+  MPI_Finalize();
   return 0;
 }
