@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "mutation.h"
+#include "mutate.h"
 #include "conflict.h"
 #include "test.h"
 
@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
   srand(time(0));
 
   // testCrossoverRandomSplit();
-  
+
   // testGetConflictsPerQueen();
 
   // testMax();

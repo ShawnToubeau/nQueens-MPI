@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include "mutation.h"
+#include "mutate.h"
 #include "conflict.h"
 
 int max(int N, int* l) {
