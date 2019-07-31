@@ -1,23 +1,31 @@
+#include "mpi.h"
+#include "assistFunctions.h"
+#include "assistFunctions.c"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "assistFunctions.c"
-#include "mpi.h"
 
-// Calculates the conflict scores of a chess board
-// int computeConflictScores(int N, int board[N][N])
-// {
-//   // This is temp
-//   for (size_t i = 0; i < N; ++i)
-//   {
-//     for (size_t j = 0; j < N; ++j)
-//     {
-//       printf(" %d", board[i][j]);
-//     }
-//     printf("\n");
-//   }
-//   return 1;
-// }
+void printBoard(int N, int *board)
+{
+  printf("\n");
+  for (int i = 0; i < N; ++i)
+  {
+    printf("[");
+    for (int j = 0; j < N; ++j)
+    {
+      if (board[i] == j)
+      {
+        printf("Q");
+      }
+      else
+      {
+        printf("+");
+      }
+    }
+    printf("]\n");
+  }
+  printf("\n");
+}
 
 int main(int argc, char **argv)
 {
@@ -42,48 +50,39 @@ int main(int argc, char **argv)
 
   // Allocates all the sets into a 3D array
   // [[Set 1: N * N], [Set 2: N * N], ..., [Set num_sets: N * N]]
-  int(*sets)[N][N] = malloc(sizeof(int[num_sets][N][N]));
+  int(*sets)[N * N] = malloc(sizeof(int[num_sets][N * N]));
 
   // Sets the initial value of the sets
   for (size_t p = 0; p < num_sets; p++)
   {
-    for (size_t i = 0; i < N; ++i)
+    for (size_t i = 0; i < N * N; ++i)
     {
-      for (size_t j = 0; j < N; ++j)
-      {
-        sets[p][i][j] = rand() % N;
-      }
+
+      sets[p][i] = rand() % N;
     }
   }
 
   // Prints the sets
-  // for (size_t p = 0; p < num_sets; p++)
-  // {
-  //   printf("Outter set %lu\n", p);
-  //   for (size_t i = 0; i < N; ++i)
-  //   {
-  //     for (size_t j = 0; j < N; ++j)
-  //     {
-  //       printf(" %d", sets[p][i][j]);
-  //     }
-  //     printf("\n");
-  //   }
-  // }
+  for (size_t p = 0; p < num_sets; p++)
+  {
+    printBoard(N, sets[p]);
+  }
 
   // Allocate conflict score array
   int *conflict_scores = (int *)malloc(num_sets * sizeof(int));
 
-  // Populates conflict score array
+  // // Populates conflict score array
   for (int i = 0; i < num_sets; i++)
   {
-    conflict_scores[i] = computeConflictScores(N, N, sets[i]);
+    conflict_scores[i] = computeConflictScore(N, sets[i]);
   }
 
-  // Prints conflict scores
+  // // Prints conflict scores
   for (int i = 0; i < num_sets; i++)
   {
     printf("%d ", conflict_scores[i]);
   }
+  printf("\n");
 
   // While the sum of the conflict scores isn't 0
   // Perform mutate_max_conflict and crossover_random_split on the sets

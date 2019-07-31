@@ -1,54 +1,76 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <omp.h>
+#include "omp.h"
 
-/*  Assuming board[][] contains one of two values:
- *      0: No queen present
- *      1: Queen present
- */ 
+int sum(int arr[], int N)
+{
+    int sum = 0; // initialize sum
 
-int computeConflictScore(int x, int y, int** board) {
-    int conflictScore = 0;
-    #pragma omp parallel default(shared)
+    // Iterate through all elements
+    // and add them to sum
+    for (int i = 0; i < N; i++)
+        sum += arr[i];
+
+    return sum;
+}
+
+// Calculates the conflict scores of a chess board
+int computeConflictScore(int N, int board[N])
+{
+    int i = 0, j = 1; // Double iterators
+    int(*conflictQueens) = malloc(sizeof(int[N]));
+
+    // Set all values in conflict queen to -1
+    for (; i < N * N; i++)
     {
-        for(int i = omp_get_num_threads(); i < y; i+=omp_get_thread_num()) {
-            for(int j = 0; j < x; j++) {
-                if(board[i][j] == 1) {
-                    for(int k = 0; k < x; k++) {
-                        if(board[i][k] == 1 && k != j) { // horizontal checks
-                            #pragma omp atomic update
-                            conflictScore++;
-                        }
-                        if(board[k][j] == 1 && k != i) { // vertical checks
-                            #pragma omp atomic update
-                            conflictScore++;
-                        }
-                        if(i-k >= 0 && j-k >= 0 && i+k < y && j+k < x && k != i && k != j) { // diagonal checks
-                            if(board[i-k][j-k] == 1)
-                                #pragma omp atomic update
-                                conflictScore++;
-                            if(board[i+k][j-k] == 1)
-                                #pragma omp atomic update
-                                conflictScore++;
-                            if(board[i-k][j+k] == 1)
-                                #pragma omp atomic update
-                                conflictScore++;
-                            if(board[i+k][j+k] == 1)
-                                #pragma omp atomic update
-                                conflictScore++;
-                        }
-                    }
-                }
+        conflictQueens[i] = -1;
+    }
+
+    while (i != N * N)
+    {
+
+        if (j == N * N - 1)
+        { // Reached all comparisons
+            if (conflictQueens[i] == -1)
+            {
+                conflictQueens[i] = 0;
+            }
+            break;
+        }
+
+        // Check diagonals and column
+        if (i - board[i] == j - board[j] || i + board[i] == j + board[j] || board[i] == board[j])
+        {
+            conflictQueens[i] = 1, conflictQueens[j] = 1; // Found conflict
+            if (j == N * N - 1)
+            { // Special case where conflict is with last positioned K/M
+                i++;
+                j = i + 1;
+            }
+            else
+            { // Case where conflict occurs before the last positioned K/M
+                j++;
             }
         }
+        else if (j == N * N - 1)
+        { // If K/M is at the last postion
+            if (conflictQueens[i] == -1)
+            {
+                conflictQueens[i] = 0;
+            }
+            i++;
+            j = i + 1;
+        }
+        else
+        {
+            j++;
+        }
     }
-    return conflictScore/2;
+
+    return sum(conflictQueens, N);
 }
 
-int computeRandMutation(int x, int y,, int** board) {
-    return 0;
-}
-
-int main() {
+int computeRandMutation(int N, int board[N])
+{
     return 0;
 }
