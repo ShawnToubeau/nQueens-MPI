@@ -1,21 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-void mutateTrulyRandom(int N, int* board);
-int** crossoverRandomSplit(int N, int* board1, int* board2, double r);
-void printBoard (int N, int* board);
-void fillRandom (int N, int* board);
-double randDouble();
-void testMutateTrulyRandom();
-void testCrossoverRandomSplit();
+#include "mutation.h"
 
 int main(int argc, char **argv) {
 
   srand(time(0));
 
   // testMutateTrulyRandom();
-  testCrossoverRandomSplit();
+  // testCrossoverRandomSplit();
 }
 
 /*
