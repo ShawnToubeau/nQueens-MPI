@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "omp.h"
+// #include "omp.h"
 #include "assistFunctions.h"
 
 int sum(int arr[], int N)
@@ -21,21 +21,19 @@ int computeConflictScore(int N, int *board)
     // Define double iterators
     int i = 0, j = 1;
     // Board to store all out conflicts
-    int *conflictQueens = (int *)malloc(N * N * sizeof(int));
+    int *conflictQueens = (int *)malloc(N * sizeof(int));
 
     // Set all values in the conflict board to -1
-    for (; i < N * N; i++)
+    for (int a = 0; a < N; a++)
     {
         conflictQueens[i] = -1;
     }
 
-    // Reset i
-    i = 0;
     // Loop through the entire board
-    while (i != N * N)
+    while (i != N)
     {
         // Check if we've reached all comparisons
-        if (j == N * N - 1)
+        if (i == N - 1)
         {
             if (conflictQueens[i] == -1)
             {
@@ -49,7 +47,7 @@ int computeConflictScore(int N, int *board)
         {
             conflictQueens[i] = 1, conflictQueens[j] = 1; // Found conflict
             // Special case where conflict is with last positioned j
-            if (j == N * N - 1)
+            if (j == N - 1)
             {
                 // Increment our iterators
                 i++;
@@ -63,7 +61,7 @@ int computeConflictScore(int N, int *board)
             }
         }
         // Check if j has reached the end
-        else if (j == N * N - 1)
+        else if (j == N - 1)
         {
             // Checks if there's an existing conflict
             if (conflictQueens[i] == -1)
@@ -109,4 +107,14 @@ void printBoard(int N, int *board)
         printf("]\n");
     }
     printf("\n");
+}
+
+int main(int argc, char **argv) {
+    // test
+    int N = 4;
+    int board[4] = { 1, 1, 1, 1 };
+
+    int conflictScore = computeConflictScore(N, board);
+    printf("Conflict score is: %d\n", conflictScore);
+    return 0;
 }
