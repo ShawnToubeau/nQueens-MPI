@@ -1,35 +1,11 @@
 #include "mpi.h"
 #include "assistFunctions.h"
-#include "assistFunctions.c"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-void printBoard(int N, int *board)
-{
-  printf("\n");
-  for (int i = 0; i < N; ++i)
-  {
-    printf("[");
-    for (int j = 0; j < N; ++j)
-    {
-      if (board[i] == j)
-      {
-        printf("Q");
-      }
-      else
-      {
-        printf("+");
-      }
-    }
-    printf("]\n");
-  }
-  printf("\n");
-}
-
 int main(int argc, char **argv)
 {
-
   // Initial variables
   int rank, totalRanks, num_sets, N;
   double gen_div_factor;
@@ -48,22 +24,21 @@ int main(int argc, char **argv)
 
   srand(time(0));
 
-  // Allocates all the sets into a 3D array
+  // Allocates all the sets into a 2D array
   // [[Set 1: N * N], [Set 2: N * N], ..., [Set num_sets: N * N]]
   int(*sets)[N * N] = malloc(sizeof(int[num_sets][N * N]));
 
   // Sets the initial value of the sets
-  for (size_t p = 0; p < num_sets; p++)
+  for (int p = 0; p < num_sets; p++)
   {
-    for (size_t i = 0; i < N * N; ++i)
+    for (int i = 0; i < N * N; ++i)
     {
-
       sets[p][i] = rand() % N;
     }
   }
 
   // Prints the sets
-  for (size_t p = 0; p < num_sets; p++)
+  for (int p = 0; p < num_sets; p++)
   {
     printBoard(N, sets[p]);
   }
@@ -71,7 +46,7 @@ int main(int argc, char **argv)
   // Allocate conflict score array
   int *conflict_scores = (int *)malloc(num_sets * sizeof(int));
 
-  // // Populates conflict score array
+  // Populates conflict score array
   for (int i = 0; i < num_sets; i++)
   {
     conflict_scores[i] = computeConflictScore(N, sets[i]);

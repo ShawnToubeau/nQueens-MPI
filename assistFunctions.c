@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "omp.h"
+#include "assistFunctions.h"
 
 int sum(int arr[], int N)
 {
@@ -14,23 +15,26 @@ int sum(int arr[], int N)
     return sum;
 }
 
-// Calculates the conflict scores of a chess board
-int computeConflictScore(int N, int board[N])
+// Calculates the conflict scores of a board
+int computeConflictScore(int N, int *board)
 {
-    int i = 0, j = 1; // Double iterators
-    int(*conflictQueens) = malloc(sizeof(int[N]));
+    // Define double iterators
+    int i = 0, j = 1;
+    // Board to store all out conflicts
+    int *conflictQueens = (int *)malloc(N * N * sizeof(int));
 
-    // Set all values in conflict queen to -1
+    // Set all values in the conflict board to -1
     for (; i < N * N; i++)
     {
         conflictQueens[i] = -1;
     }
 
+    // Loop through the entire board
     while (i != N * N)
     {
-
+        // Check if we've reached all comparisons
         if (j == N * N - 1)
-        { // Reached all comparisons
+        {
             if (conflictQueens[i] == -1)
             {
                 conflictQueens[i] = 0;
@@ -38,39 +42,69 @@ int computeConflictScore(int N, int board[N])
             break;
         }
 
-        // Check diagonals and column
+        // Check diagonals, columns, and rows
         if (i - board[i] == j - board[j] || i + board[i] == j + board[j] || board[i] == board[j])
         {
             conflictQueens[i] = 1, conflictQueens[j] = 1; // Found conflict
+            // Special case where conflict is with last positioned j
             if (j == N * N - 1)
-            { // Special case where conflict is with last positioned K/M
+            {
+                // Increment our iterators
                 i++;
                 j = i + 1;
             }
+            // Case where conflict occurs before the last positioned j
             else
-            { // Case where conflict occurs before the last positioned K/M
+            {
+                // Increment j
                 j++;
             }
         }
+        // Check if j has reached the end
         else if (j == N * N - 1)
-        { // If K/M is at the last postion
+        {
+            // Checks if there's an existing conflict
             if (conflictQueens[i] == -1)
             {
                 conflictQueens[i] = 0;
             }
+            // Increment out iterators
             i++;
             j = i + 1;
         }
         else
         {
+            // Increment j
             j++;
         }
     }
-
+    // Return summed conflict scores
     return sum(conflictQueens, N);
 }
 
-int computeRandMutation(int N, int board[N])
+int computeRandMutation(int N, int *board)
 {
     return 0;
+}
+
+void printBoard(int N, int *board)
+{
+    printf("\n");
+    for (int i = 0; i < N; ++i)
+    {
+        printf("[");
+        for (int j = 0; j < N; ++j)
+        {
+            if (board[i] == j)
+            {
+                printf("Q");
+            }
+            else
+            {
+                printf("+");
+            }
+        }
+        printf("]\n");
+    }
+    printf("\n");
 }
