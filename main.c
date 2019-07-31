@@ -4,6 +4,19 @@
 #include <stdlib.h>
 #include <time.h>
 
+
+int** slave(set1, set2) {
+  // Do the stuff
+
+  int(*new_sets)[N * N] = malloc(sizeof(int[num_sets][N * N]));
+  new_sets[0] = set1;
+  new_sets[1] = set1;
+  new_sets[2] = set2;
+  new_sets[3] = set2;
+
+  return new_sets; 
+}
+
 int main(int argc, char **argv)
 {
   // Initial variables
@@ -55,7 +68,7 @@ int main(int argc, char **argv)
     }
 
     // For testing purposes, so we do accidentally fall into a infinite loop
-    int limit = 5;
+    int limit = 1;
     // While there are still conflicts, keep trying to get new boards
     while (sum(conflict_scores, num_sets) > 0 && limit > 0) {
       // Send the sets to all the slaves
@@ -67,7 +80,7 @@ int main(int argc, char **argv)
         // TODO: make variable to store new sets sent from slaves
         // If we have 3 ranks, 1 of them is the master..
         // new_sets: [[slave-set-1],[slave-set-2]
-        MPI_Recv(new_sets, num_sets * N * N, MPI_INT, nextRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        // MPI_Recv(new_sets, num_sets * N * N, MPI_INT, nextRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       }
 
       // With the new pool of sets from the slaves, iterate over the original sets and check to see if the corresponding sets are better
@@ -97,22 +110,29 @@ int main(int argc, char **argv)
   else 
   {
     // Allocates space for incoming sets
-    int(*slave_sets)[N * N] = malloc(sizeof(int[num_sets][N * N]));
+    int(*incoming_sets)[N * N] = malloc(sizeof(int[num_sets][N * N]));
 
-    MPI_Recv(slave_sets, num_sets * N * N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    // Allocate space for the new sets to be returned
+    // [[4 sets], [4 sets]]
+    int(*new_sets)[N * N] = malloc(2 * sizeof(int[num_sets][N * N]));
 
-    // printf("Rank: %d\n", rank);
-    // for (int p = 0; p < num_sets; p++)
-    // {
-    //   printBoard(N, slave_sets[p]);
-    // }
+    MPI_Recv(incoming_sets, num_sets * N * N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    new_sets[0] = slave(incoming_sets[0], incoming_sets[1]);
+    new_sets[1] = slave(incoming_sets[2], incoming_sets[3]);
+
+    // Test print
+    printf("Rank: %d\n", rank);
+    for (int i = 0; i < 2; i++) {
+      for (int p = 0; p < num_sets; p++)
+      {
+        printBoard(N, new_sets[i][p]);
+      }
+    }
 
 
-    // Have the slave pick 2 random boards from the set and use mutate_max_conflict
-    // Use crossover_random_split on the remaining two
 
     // MPI_SEND, send the new boards back to the master
-
   }
 
   MPI_Finalize();
