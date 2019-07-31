@@ -29,6 +29,8 @@ int computeConflictScore(int N, int *board)
         conflictQueens[i] = -1;
     }
 
+    // Reset i
+    i = 0;
     // Loop through the entire board
     while (i != N * N)
     {
