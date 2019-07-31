@@ -2,6 +2,22 @@
 #include <stdlib.h>
 #include <time.h>
 
+void mutateTrulyRandom(int N, int* board);
+int** crossoverRandomSplit(int N, int* board1, int* board2, double r);
+void printBoard (int N, int* board);
+void fillRandom (int N, int* board);
+double randDouble();
+void testMutateTrulyRandom();
+void testCrossoverRandomSplit();
+
+int main(int argc, char **argv) {
+
+  srand(time(0));
+
+  // testMutateTrulyRandom();
+  testCrossoverRandomSplit();
+}
+
 /*
   This method will mutate the board reference passed to it directly.
  */
@@ -38,6 +54,11 @@ int** crossoverRandomSplit(int N, int* board1, int* board2, double r) {
     }
   }
 
+  if (randDouble() < r) {
+    mutateTrulyRandom(N, res[0]);
+    mutateTrulyRandom(N, res[1]);
+  }
+
   return res;
 }
 
@@ -64,6 +85,10 @@ void fillRandom (int N, int* board) {
   {
     board[i] = rand() % N;
   }
+}
+
+double randDouble() {
+  return (double)rand()/(double)RAND_MAX;
 }
 
 void testMutateTrulyRandom() {
@@ -109,7 +134,8 @@ void testCrossoverRandomSplit() {
   printf("Board 2:\n");
   printBoard(N, board2);
 
-  res = crossoverRandomSplit(N, board1, board2, 0);
+  double randFactor = 0; // less than 0 defaults to 0.15, should not exceed 1.
+  res = crossoverRandomSplit(N, board1, board2, randFactor);
 
   printf("After Crossover Random Split:\n");
   printf("Result 1:\n");
@@ -122,12 +148,4 @@ void testCrossoverRandomSplit() {
   free(res[0]);
   free(res[1]);
   free(res);
-}
-
-int main(int argc, char **argv) {
-
-  srand(time(0));
-
-  testMutateTrulyRandom();
-  testCrossoverRandomSplit();
 }
