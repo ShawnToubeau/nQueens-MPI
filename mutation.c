@@ -2,13 +2,46 @@
 #include <stdlib.h>
 #include <time.h>
 #include "mutation.h"
+#include "conflict.h"
 
-int main(int argc, char **argv) {
+int max(int N, int* l) {
+  int m;
+  for (int i = 0; i < N; i++) {
+    if (l[i] > m) m = l[i];
+  }
+  return m;
+}
 
-  srand(time(0));
+void mutate(int N, int* board) {
+  int* conflictsPerQueen = getConflictsPerQueen(N, board);
+  int sampleIndex = rand() % N;
+  int sampleConflict = conflictsPerQueen[sampleIndex];
 
-  // testMutateTrulyRandom();
-  // testCrossoverRandomSplit();
+  if (max(N, conflictsPerQueen) == 0) {
+    return;
+  } else {
+    while (sampleConflict == 0) {
+      sampleIndex = rand() % N;
+      sampleConflict = conflictsPerQueen[sampleIndex];
+    }
+  }
+
+  int posC = 0;
+  int conflict, minConflict, minConflictIndex;
+
+  while (posC < N) {
+    board[sampleIndex] = posC;
+    conflict = getConflictsPerQueen(N, board)[sampleIndex];
+
+    if (conflict < minConflict) {
+      minConflict = conflict;
+      minConflictIndex = posC;
+    }
+
+    posC++;
+  }
+
+  board[sampleIndex] = minConflictIndex;
 }
 
 /*
@@ -55,90 +88,6 @@ int** crossoverRandomSplit(int N, int* board1, int* board2, double r) {
   return res;
 }
 
-void printBoard (int N, int* board) {
-  printf("\n");
-  for (int i = 0; i < N; ++i)
-  {
-    printf("[");
-    for (int j = 0; j < N; ++j)
-    {
-      if (board[i] == j) {
-        printf("Q");
-      } else {
-        printf("+");
-      }
-    }
-    printf("]\n");
-  }
-  printf("\n");
-}
-
-void fillRandom (int N, int* board) {
-  for (int i = 0; i < N; ++i)
-  {
-    board[i] = rand() % N;
-  }
-}
-
 double randDouble() {
   return (double)rand()/(double)RAND_MAX;
-}
-
-void testMutateTrulyRandom() {
-  int N = 4;
-
-  // Allocate
-  int *board = malloc(N * sizeof(int));
-
-  // Assign
-  fillRandom(N, board);
-
-  // Print before
-  printf("Before Mutation:\n");
-  printBoard(N, board);
-
-  for (int i = 1; i < 5; i++) {
-    mutateTrulyRandom(N, board);
-    printf("After Mutation %d:\n", i);
-    printBoard(N, board);
-  }
-
-  free(board);
-}
-
-void testCrossoverRandomSplit() {
-  int N = 4;
-
-  // Allocate
-  int *board1 = malloc(N * sizeof(int));
-  int *board2 = malloc(N * sizeof(int));
-  int** res = (int **)malloc(2 * N * sizeof(int));
-  res[0] = (int *)malloc(N * sizeof(int));
-  res[1] = (int *)malloc(N * sizeof(int));
-
-  // Assign
-  fillRandom(N, board1);
-  fillRandom(N, board2);
-
-  // Print before
-  printf("Before Crossover Random Split:\n");
-  printf("Board 1:\n");
-  printBoard(N, board1);
-  printf("Board 2:\n");
-  printBoard(N, board2);
-
-  double randFactor = 0; // less than 0 defaults to 0.15, should not exceed 1.
-  res = crossoverRandomSplit(N, board1, board2, randFactor);
-
-  printf("After Crossover Random Split:\n");
-  printf("Result 1:\n");
-  printBoard(N, res[0]);
-  printf("Result 2:\n");
-  printBoard(N, res[1]);
-
-  free(board1);
-  free(board2);
-  free(res[0]);
-  free(res[1]);
-  free(res);
 }

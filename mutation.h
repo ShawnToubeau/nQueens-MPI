@@ -1,12 +1,10 @@
 #ifndef MUTATION_H_
 #define MUTATION_H_
 
+void mutate(int N, int* board);
 void mutateTrulyRandom(int N, int* board);
 int** crossoverRandomSplit(int N, int* board1, int* board2, double r);
-void printBoard (int N, int* board);
-void fillRandom (int N, int* board);
+int max(int N, int* l);
 double randDouble();
-void testMutateTrulyRandom();
-void testCrossoverRandomSplit();
 
 #endif
