@@ -7,6 +7,8 @@ void testMutateTrulyRandom();
 void testCrossoverRandomSplit();
 void testGetConflictsPerQueen();
 void testMax();
+void testGetIndex();
 void testMutate();
+void testMutateMaxConflict();
 
 #endif

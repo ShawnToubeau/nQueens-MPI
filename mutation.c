@@ -5,13 +5,27 @@
 #include "conflict.h"
 
 int max(int N, int* l) {
-  int m;
+  int m = INT8_MIN;
   for (int i = 0; i < N; i++) {
     if (l[i] > m) m = l[i];
   }
   return m;
 }
 
+int getIndex(int N, int* l, int m) {
+  int i = -1;
+  for (int j = 0; j < N; j++) {
+    if (l[j] == m) {
+      i = j;
+      break;
+    }
+  }
+  return i;
+}
+
+/*
+  Unused in favor of mutateMaxConflict
+ */
 void mutate(int N, int* board) {
   int* conflictsPerQueen = getConflictsPerQueen(N, board);
   int sampleIndex = rand() % N;
@@ -52,6 +66,36 @@ void mutateTrulyRandom(int N, int* board) {
   int c = rand() % N;
   
   board[i] = c;
+}
+
+/*
+  Finds queen in maximum conflict and trys to improve that individual queen's conflict score
+ */
+void mutateMaxConflict(int N, int* board) {
+  int *conflictsPerQueen = getConflictsPerQueen(N, board);
+
+  int maxConflict = max(N, conflictsPerQueen);
+
+  if (maxConflict == 0) return;
+  int maxConflictIndex = getIndex(N, conflictsPerQueen, maxConflict);
+
+  int posC = 0;
+  int minConflict = INT8_MAX;
+  int conflict, minConflictIndex;
+
+  while (posC < N) {
+    board[maxConflictIndex] = posC;
+    conflict = getConflictsPerQueen(N, board)[maxConflictIndex];
+
+    if (conflict < minConflict) {
+      minConflict = conflict;
+      minConflictIndex = posC;
+    }
+
+    posC++;
+  }
+
+  board[maxConflictIndex] = minConflictIndex;
 }
 
 /*

@@ -9,11 +9,16 @@ int main(int argc, char **argv) {
 
   srand(time(0));
 
-  // testMutateTrulyRandom();
   // testCrossoverRandomSplit();
+  
   // testGetConflictsPerQueen();
+
   // testMax();
-  testMutate();
+  // testGetIndex();
+
+  // testMutate();
+  // testMutateMaxConflict();
+  // testMutateTrulyRandom();
 }
 
 void printBoard (int N, int* board) {
@@ -39,28 +44,6 @@ void fillRandom (int N, int* board) {
   {
     board[i] = rand() % N;
   }
-}
-
-void testMutateTrulyRandom() {
-  int N = 4;
-
-  // Allocate
-  int *board = malloc(N * sizeof(int));
-
-  // Assign
-  fillRandom(N, board);
-
-  // Print before
-  printf("Before Mutation:\n");
-  printBoard(N, board);
-
-  for (int i = 1; i < 5; i++) {
-    mutateTrulyRandom(N, board);
-    printf("After Mutation %d:\n", i);
-    printBoard(N, board);
-  }
-
-  free(board);
 }
 
 void testCrossoverRandomSplit() {
@@ -119,6 +102,14 @@ void testMax() {
   printf("Max is: %d\n", m);
 }
 
+void testGetIndex() {
+  int l[5] = { 0, 99, 15, -23, 100 };
+
+  int i = getIndex(5, l, 15);
+
+  printf("Index is: %d\n", i);
+}
+
 void testMutate() {
   int N = 4;
   int board[4] = { 0, 0, 0, 0 };
@@ -130,4 +121,39 @@ void testMutate() {
 
   printf("After Mutation\n");
   printBoard(N, board);
+}
+
+void testMutateMaxConflict() {
+  int N = 4;
+  int board[4] = { 1, 0, 3, 1 };
+
+  printf("Before Mutation\n");
+  printBoard(N, board);
+
+  mutateMaxConflict(N, board);
+
+  printf("After Mutation\n");
+  printBoard(N, board);
+}
+
+void testMutateTrulyRandom() {
+  int N = 4;
+
+  // Allocate
+  int *board = malloc(N * sizeof(int));
+
+  // Assign
+  fillRandom(N, board);
+
+  // Print before
+  printf("Before Mutation:\n");
+  printBoard(N, board);
+
+  for (int i = 1; i < 5; i++) {
+    mutateTrulyRandom(N, board);
+    printf("After Mutation %d:\n", i);
+    printBoard(N, board);
+  }
+
+  free(board);
 }
