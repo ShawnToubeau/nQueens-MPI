@@ -2,6 +2,14 @@
 #include <stdio.h>
 #include "assistFunctions.h"
 
+int min(int N, int* l) {
+  int m = l[0]; // INT8_MAX
+  for (int i = 1; i < N; i++) {
+    if (l[i] < m) m = l[i];
+  }
+  return m;
+}
+
 int max(int N, int* l) {
   int m = 0; // INT8_MIN
   for (int i = 0; i < N; i++) {
