@@ -8,18 +8,19 @@
 
 int** slave(int *set1, int *set2, int N, int num_sets) {
 
-  // Do the stuff
-
-  // allocate Rows rows, each row is a pointer to int
+  // Array that will hold the 4 newly mutated sets
   int **new_sets = (int **)malloc(num_sets * sizeof(int *)); 
-
-  // for each row allocate Cols ints
+  
   for (int row = 0; row < N; row++) {
       new_sets[row] = (int *)malloc(N * N * sizeof(int));
   }
 
-  printf("Slave\n");
+  // TODO: Incorporate the mutate functions
 
+
+  // Simulates the return of the mutated sets
+  // [[set1], [set1], [set2], [set2]]
+  printf("Slave\n");
   for (int i = 0; i < num_sets; i++) {
     for (int j = 0; j < N * N; j++) {
       if (i < 2) {
@@ -96,7 +97,7 @@ int main(int argc, char **argv)
       conflict_scores[i] = computeConflictScore(N, sets[i]);
     }
 
-    // For testing purposes, so we do accidentally fall into a infinite loop
+    // NOTE: For testing purposes so we do not accidentally fall into a infinite loop
     int limit = 1;
     // While there are still conflicts, keep trying to get new boards
     while (sum(num_sets, conflict_scores) > 0 && limit > 0) {
@@ -106,13 +107,12 @@ int main(int argc, char **argv)
 
         // Slaves do work to make new boards
 
-        // TODO: make variable to store new sets sent from slaves
-        // If we have 3 ranks, 1 of them is the master..
-        // new_sets: [[slave-set-1],[slave-set-2]
+        // TODO: make an array to store mutated sets sent from slaves
+
         // MPI_Recv(new_sets, num_sets * N * N, MPI_INT, nextRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       }
 
-      // With the new pool of sets from the slaves, iterate over the original sets and check to see if the corresponding sets are better
+      // With the new pool of mutated sets from the slaves, iterate over the original sets and check to see if the corresponding sets are better
       for (int i = 0; i < num_sets; i++) {
         for (int j = 0; j < totalRanks -1; j++) {
           // If set[i] is worse than new_sets[j][i]
@@ -127,30 +127,25 @@ int main(int argc, char **argv)
       }
       limit--;
     }
-
-    // // Prints conflict scores
-    // for (int i = 0; i < num_sets; i++)
-    // {
-    //   printf("%d ", conflict_scores[i]);
-    // }
-    // printf("\n");
   }
   // Slave block 
   else 
   {
-    // Allocates space for incoming sets
+    // Allocates space for incoming sets from master
     int(*incoming_sets)[N * N] = malloc(sizeof(int[num_sets][N * N]));
 
     MPI_Recv(incoming_sets, num_sets * N * N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    // Allocate space for the new sets to be returned
+    // HELP: not sure if all the stuff below it the optimal way of handling things
+    // because slave() returns pointers to the mutated sets
+    // Allocate space for the new sets to be returned from slave()
     // [[4 sets], [4 sets]]
     int(*new_sets)[N * N] = malloc(2 * sizeof(int[num_sets][N * N]));
 
     int** new_sets_1 = slave(incoming_sets[0], incoming_sets[1], N, num_sets);
     int** new_sets_2 = slave(incoming_sets[2], incoming_sets[3], N, num_sets);
 
-    printf("Returned\n");
+    printf("Mutated Sets\n");
 
     for (int i = 0; i < num_sets * 2; i++) {
       for (int j = 0; j < N * N; j++) {
@@ -177,59 +172,7 @@ int main(int argc, char **argv)
       printf("\n");
     }
 
-    // // allocate Rows rows, each row is a pointer to int
-    // int **new_sets = (int **)malloc(num_sets * 2 * sizeof(int *)); 
-
-    // // for each row allocate Cols ints
-    // for (int row = 0; row < N; row++) {
-    //     new_sets[row] = (int *)malloc(N * N * sizeof(int));
-    // }
-
-    printf("DONE\n");
-    
-    // for (int i = 0; i < num_sets; i++) {
-    //   for (int j = 0; j < N * N; j++) {
-    //     if (j % N == 0) {
-    //       printf("\n");
-    //     }
-    //     printf(" %d", new_sets_2[i][j]);
-        
-    //   }
-    //   printf("\n");
-    // }
-
-    // for (int i = 0; i < num_sets * 2; i++) {
-    //   for (int j = 0; j < N * N; j++) {
-    //     // if (i < 4) {
-    //       new_sets[i][j] = new_sets_1[j * i];
-    //     // }
-    //   }
-    // }
-
-    // printf("Rank %d\n", rank);
-    // for (int i = 0; i < num_sets * 2; i++) {
-    //   for (int j = 0; j < N * N; j++) {
-    //     if (j % N == 0) {
-    //       printf("\n");
-    //     }
-    //     printf(" %d", new_sets[i][j]);
-    //   }
-    //   printf("\n");
-    // }
-
-    // Test print
-    // printf("Rank: %d\n", rank);
-    // for (int i = 0; i < 2; i++) {
-    //   printf("Rank: %d, New Set: %d\n",rank, i);
-    //   for (int p = 0; p < num_sets; p++)
-    //   {
-    //     printBoard(N, new_sets[i][p]);
-    //   }
-    // }
-
-
-
-    // MPI_SEND, send the new boards back to the master
+    // MPI_SEND, send the mutated boards back to the master
   }
 
   MPI_Finalize();
