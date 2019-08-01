@@ -3,7 +3,7 @@
 #include "assistFunctions.h"
 
 int max(int N, int* l) {
-  int m = INT8_MIN;
+  int m = 0; // INT8_MIN
   for (int i = 0; i < N; i++) {
     if (l[i] > m) m = l[i];
   }
