@@ -1,9 +1,14 @@
 #ifndef AF_H_ /* Include guard */
 #define AF_H_
 
-// Used in mutate.c
+// Used in main.c
+int min(int N, int* l);
+
+// Used in mutate.c, main.c
 int max(int N, int* l);
 int getIndex(int N, int* l, int m);
+
+// Used in mutate.c
 double randDouble();
 
 // Used in conflict.c

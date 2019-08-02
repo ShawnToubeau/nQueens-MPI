@@ -81,7 +81,7 @@ void mutateMaxConflict(int N, int* board) {
 
 /*
   This method will not mutate the board references passed to it. Instead
-  it will return two new boards identicle in size too the ones passed in.
+  it will return two new boards identical in size too the ones passed in.
  */
 int** crossoverRandomSplit(int N, int* board1, int* board2, double r) {
   int** res = (int **)malloc(2 * N * sizeof(int));
