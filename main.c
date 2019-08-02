@@ -79,18 +79,6 @@ int main(int argc, char **argv)
         MPI_Recv(&newMinConf, 1, MPI_INT, nextRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       }
 
-      printf("Current Sets\n");
-      for (int p = 0; p < NUM_SETS; p++)
-      {
-        printBoard(N, sets[p]);
-      }
-
-      printf("Current Conflict Scores\n");
-      for (int i = 0; i < NUM_SETS; i++) {
-        printf("%d ", conflict_scores[i]);
-      }
-      printf("\n\n");
-
       int currMaxConf = max(NUM_SETS, conflict_scores);
       // Checks if the new conflict score is better than the existing worse score
       if (newMinConf < currMaxConf) {
@@ -101,19 +89,6 @@ int main(int argc, char **argv)
         }
         // Update the conflict score
         conflict_scores[currMaxConflictIndex] = newMinConf;
-      }
-
-      printf("New Conflict Scores\n");
-      for (int i = 0; i < NUM_SETS; i++) {
-        printf("%d ", conflict_scores[i]);
-      }
-      printf("\n\n");
-      
-      // Prints the sets
-      printf("New Sets\n");
-      for (int p = 0; p < NUM_SETS; p++)
-      {
-        printBoard(N, sets[p]);
       }
     }
   }
