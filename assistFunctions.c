@@ -11,7 +11,7 @@ int min(int N, int* l) {
 }
 
 int max(int N, int* l) {
-  int m = 0; // INT8_MIN
+  int m = l[0]; // INT8_MIN
   for (int i = 0; i < N; i++) {
     if (l[i] > m) m = l[i];
   }

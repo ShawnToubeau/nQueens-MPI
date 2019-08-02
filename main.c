@@ -17,20 +17,6 @@ int** slave(int *set1, int *set2, int N, int NUM_SETS) {
 
   // TODO: Incorporate the mutate functions
 
-
-  // Simulates the return of the mutated sets
-  // [[set1], [set1], [set2], [set2]]
-  for (int i = 0; i < NUM_SETS; i++) {
-    for (int j = 0; j < N * N; j++) {
-      if (i < 2) {
-        new_sets[i][j] = set1[j];
-      } else { 
-        new_sets[i][j] = set2[j];
-      }
-      
-    }
-  }
-
   return new_sets; 
 }
 
@@ -78,10 +64,8 @@ int main(int argc, char **argv)
       conflict_scores[i] = computeConflictScore(N, sets[i]);
     }
 
-    // NOTE: For testing purposes so we do not accidentally fall into a infinite loop
-    int limit = 1;
     // While there are still conflicts, keep trying to get new boards
-    while (sum(NUM_SETS, conflict_scores) > 0 && limit > 0) {
+    while (sum(NUM_SETS, conflict_scores) > 0) {
       // Variables for storing the new set and accompanying conflict score from slaves
       int* optimal_set = (int*)malloc(N * N * sizeof(int));
       int newMinConf;
@@ -131,9 +115,6 @@ int main(int argc, char **argv)
       {
         printBoard(N, sets[p]);
       }
-
-      // For testing purposes
-      limit--;
     }
   }
   // Slave block 
