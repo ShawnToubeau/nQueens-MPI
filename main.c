@@ -5,13 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <limits.h>
 
 
 int** slave(int *set1, int *set2, int N, int NUM_SETS) {
 
   // Holds the 4 newly mutated sets
   int **new_sets = (int **)malloc(NUM_SETS * sizeof(int *));
-  int **mmc_sets = (int**)malloc(2*sizeof(int*));
+  int **mmc_sets = (int **)malloc(2*sizeof(int*));
 
   for (int i = 0; i < NUM_SETS; i++) {
       new_sets[i] = (int *)malloc(N * sizeof(int));
@@ -20,7 +21,7 @@ int** slave(int *set1, int *set2, int N, int NUM_SETS) {
   // TODO: Incorporate the mutate functions
   // TODO: Use OMP to improve performance
 
-  mmc_sets = crossoverRandomSplit(N, set1, set2, 0);
+  mmc_sets = crossoverRandomSplit(N, set1, set2, .5);
   new_sets[0] = mmc_sets[0];
   new_sets[1] = mmc_sets[1];
   mutateMaxConflict(N, set1);
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
   NUM_BOARDS = 4;
   // Size of the board
   N = 8;
-  gen_div_factor = 0.2;
+  gen_div_factor = 0.5;
 
   srand(time(0));
 
@@ -76,14 +77,20 @@ int main(int argc, char **argv)
     }
 
     int loopNum = 0;
+    int newMinConf = INT_MAX;
     // While there are still conflicts, keep trying to get new boards
     while (sum(NUM_BOARDS, conflict_scores) > 0) {
-      printf("RUNNING LOOP: %d\n", loopNum);
+      if(loopNum%1000 == 0) {
+        printf("RUNNING LOOP: %d ; CONFLICT SCORES: ", loopNum);
+        for(int i = 0; i < NUM_BOARDS; i++) {
+          printf("%d ", conflict_scores[i]);    
+        }
+        printf("\n");
+      }
       loopNum++;
 
       // Variables for storing the new set and accompanying conflict score from slaves
       int* optimal_set = (int*)malloc(N * sizeof(int));
-      int newMinConf;
 
       // Communicate with all the slaves
       // currently only set up for 1?
@@ -96,7 +103,6 @@ int main(int argc, char **argv)
         MPI_Recv(optimal_set, N, MPI_INT, nextRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Recv(&newMinConf, 1, MPI_INT, nextRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       
-
         int currMaxConf = max(NUM_BOARDS, conflict_scores);
         // Checks if the new conflict score is better than the existing worse score
         if (newMinConf < currMaxConf) {
@@ -110,13 +116,18 @@ int main(int argc, char **argv)
         }
       }
     }
+
+    printf("RUNNING LOOP: %d ; CONFLICT SCORES: ", loopNum);
+    for(int i = 0; i < NUM_BOARDS; i++) {
+      printf("%d ", conflict_scores[i]);    
+    }
   }
   // Slave block
   else
   {
     while(1 == 1) {
       // Allocates space for incoming sets from master
-      int(*incoming_sets)[N * N] = malloc(sizeof(int[NUM_BOARDS][N * N]));
+      int(*incoming_sets)[N] = malloc(sizeof(int[NUM_BOARDS][N]));
       MPI_Recv(incoming_sets, NUM_BOARDS * N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
       // Creates 4 new boards for every slave() call
@@ -138,7 +149,7 @@ int main(int argc, char **argv)
       int minConflict = min(NUM_BOARDS * 2, new_conflict_scores);
       int minConflictIndex = getIndex(NUM_BOARDS * 2, new_conflict_scores, minConflict);
 
-      printf("RANK: %d, CONFLICT SCORE: %d\n", rank, minConflict);
+      //printf("RANK: %d, CONFLICT SCORE: %d\n", rank, minConflict);
 
 
       // Sends the board with the lowest conflict score back to master
@@ -152,6 +163,7 @@ int main(int argc, char **argv)
     }
   }
 
+  MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
   return 0;
 }
