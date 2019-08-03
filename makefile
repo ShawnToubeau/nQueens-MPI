@@ -8,3 +8,6 @@ program1: main.c
 
 clean:
 	rm *.x
+
+wipe:
+	rm nQueensResult.*

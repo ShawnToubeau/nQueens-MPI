@@ -11,6 +11,7 @@ int** slave(int *set1, int *set2, int N, int NUM_SETS) {
 
   // Holds the 4 newly mutated sets
   int **new_sets = (int **)malloc(NUM_SETS * sizeof(int *));
+  int **mmc_sets = (int**)malloc(2*sizeof(int*));
 
   for (int i = 0; i < NUM_SETS; i++) {
       new_sets[i] = (int *)malloc(N * sizeof(int));
@@ -19,8 +20,9 @@ int** slave(int *set1, int *set2, int N, int NUM_SETS) {
   // TODO: Incorporate the mutate functions
   // TODO: Use OMP to improve performance
 
-
-  new_sets = crossoverRandomSplit(N, set1, set2, 0);
+  mmc_sets = crossoverRandomSplit(N, set1, set2, 0);
+  new_sets[0] = mmc_sets[0];
+  new_sets[1] = mmc_sets[1];
   mutateMaxConflict(N, set1);
   mutateMaxConflict(N, set2);
   new_sets[2] = set1;
@@ -93,57 +95,60 @@ int main(int argc, char **argv)
         // Wait to receive a improved set + it's conflict score
         MPI_Recv(optimal_set, N, MPI_INT, nextRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Recv(&newMinConf, 1, MPI_INT, nextRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      }
+      
 
-      int currMaxConf = max(NUM_BOARDS, conflict_scores);
-      // Checks if the new conflict score is better than the existing worse score
-      if (newMinConf < currMaxConf) {
-        int currMaxConflictIndex = getIndex(NUM_BOARDS, conflict_scores, currMaxConf);
-        // Replace the board
-        for (int i = 0; i < N; i++) {
-          sets[currMaxConflictIndex][i] = optimal_set[i];
+        int currMaxConf = max(NUM_BOARDS, conflict_scores);
+        // Checks if the new conflict score is better than the existing worse score
+        if (newMinConf < currMaxConf) {
+          int currMaxConflictIndex = getIndex(NUM_BOARDS, conflict_scores, currMaxConf);
+          // Replace the board
+          for (int i = 0; i < N; i++) {
+            sets[currMaxConflictIndex][i] = optimal_set[i];
+          }
+          // Update the conflict score
+          conflict_scores[currMaxConflictIndex] = newMinConf;
         }
-        // Update the conflict score
-        conflict_scores[currMaxConflictIndex] = newMinConf;
       }
     }
   }
   // Slave block
   else
   {
-    // Allocates space for incoming sets from master
-    int(*incoming_sets)[N * N] = malloc(sizeof(int[NUM_BOARDS][N * N]));
-    MPI_Recv(incoming_sets, NUM_BOARDS * N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    while(1 == 1) {
+      // Allocates space for incoming sets from master
+      int(*incoming_sets)[N * N] = malloc(sizeof(int[NUM_BOARDS][N * N]));
+      MPI_Recv(incoming_sets, NUM_BOARDS * N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    // Creates 4 new boards for every slave() call
-    int** new_sets_1 = slave(incoming_sets[0], incoming_sets[1], N, NUM_BOARDS);
-    int** new_sets_2 = slave(incoming_sets[2], incoming_sets[3], N, NUM_BOARDS);
+      // Creates 4 new boards for every slave() call
+      int** new_sets_1 = slave(incoming_sets[0], incoming_sets[1], N, NUM_BOARDS);
+      int** new_sets_2 = slave(incoming_sets[2], incoming_sets[3], N, NUM_BOARDS);
 
-    int *new_conflict_scores = (int *)malloc(NUM_BOARDS * 2 * sizeof(int));
+      int *new_conflict_scores = (int *)malloc(NUM_BOARDS * 2 * sizeof(int));
 
-    // Populates new conflict score array
-    for (int i = 0; i < NUM_BOARDS * 2; i++)
-    {
-      if (i < 4) {
-        new_conflict_scores[i] = computeConflictScore(N, new_sets_1[i]);
-      } else {
-        new_conflict_scores[i] = computeConflictScore(N, new_sets_2[i - NUM_BOARDS]);
+      // Populates new conflict score array
+      for (int i = 0; i < NUM_BOARDS * 2; i++)
+      {
+        if (i < 4) {
+          new_conflict_scores[i] = computeConflictScore(N, new_sets_1[i]);
+        } else {
+          new_conflict_scores[i] = computeConflictScore(N, new_sets_2[i - NUM_BOARDS]);
+        }
       }
-    }
 
-    int minConflict = min(NUM_BOARDS * 2, new_conflict_scores);
-    int minConflictIndex = getIndex(NUM_BOARDS * 2, new_conflict_scores, minConflict);
+      int minConflict = min(NUM_BOARDS * 2, new_conflict_scores);
+      int minConflictIndex = getIndex(NUM_BOARDS * 2, new_conflict_scores, minConflict);
 
-    printf("RANK: %d, CONFLICT SCORE: %d\n", rank, minConflict);
+      printf("RANK: %d, CONFLICT SCORE: %d\n", rank, minConflict);
 
 
-    // Sends the board with the lowest conflict score back to master
-    if (minConflictIndex < 4) {
-      MPI_Send(new_sets_1[minConflictIndex], N, MPI_INT, 0, 0, MPI_COMM_WORLD);
-      MPI_Send(&minConflict, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-    } else {
-      MPI_Send(new_sets_2[minConflictIndex - NUM_BOARDS], N, MPI_INT, 0, 0, MPI_COMM_WORLD);
-      MPI_Send(&minConflict, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+      // Sends the board with the lowest conflict score back to master
+      if (minConflictIndex < 4) {
+        MPI_Send(new_sets_1[minConflictIndex], N, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&minConflict, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+      } else {
+        MPI_Send(new_sets_2[minConflictIndex - NUM_BOARDS], N, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&minConflict, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+      }
     }
   }
 
