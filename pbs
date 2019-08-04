@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -l nodes=2:ppn=12
+#PBS -l nodes=15:ppn=12
 #PBS -l walltime=0:01:00
 
 
@@ -9,4 +9,4 @@
 #PBS -j oe
 
 cd /home/razat/nQueens-MPI
-mpiexec -np 2 --map-by ppr:1:node --hostfile $PBS_NODEFILE ./parallel.x
+mpiexec -np 15 --map-by ppr:1:node --hostfile $PBS_NODEFILE ./parallel.x

@@ -36,11 +36,16 @@ int main(int argc, char **argv)
     int numSets = 4;
     int N = 8;
     double genDivFactor = 0.2;
-
+    int iter = 0;
     int rank, numranks, killCode;
 
-    int** boards = (int **)malloc(numSets * N * sizeof(int));
-    int** newBoards = (int **)malloc(numSets * N * sizeof(int));
+    int** boards = malloc(numSets*sizeof(int));
+    int** newBoards = malloc(numSets*sizeof(int));
+
+    for(int i = 0; i < numSets; i++) {
+        boards[i] = malloc(N*sizeof(int));
+        newBoards[i] = malloc(N*sizeof(int));
+    }
 
     int* conflictScores = (int *)malloc(numSets * sizeof(int));
     int* newConflictScores = (int *)malloc(numSets * sizeof(int));
@@ -49,18 +54,18 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &numranks);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-
-    for (int i = 0; i < numSets; i++) {
-        boards[i] = (int *)malloc(N * sizeof(int));
-        newBoards[i] = (int *)malloc(N * sizeof(int));
-        fillRandom(N, boards[i]);
-        conflictScores[i] = computeConflictScore(N, boards[i]);
-        printf("Board %d | Conflic Score: %d\n", i, conflictScores[i]);
-        printBoard(N, boards[i]);
-    }
-
-    int iter = 0;
     if(rank == 0) {
+        for (int i = 0; i < numSets; i++) {
+            boards[i] = (int *)malloc(N * sizeof(int));
+            newBoards[i] = (int *)malloc(N * sizeof(int));
+            fillRandom(N, boards[i]);
+            conflictScores[i] = computeConflictScore(N, boards[i]);
+            printf("Board %d | Conflic Score: %d\n", i, conflictScores[i]);
+            printBoard(N, boards[i]);
+        }
+
+        //int iter = 0;
+        //if(rank == 0) {
         while (sum(numSets, conflictScores) != 0) {
             int i1 = rand() % numSets;
             int i2;
@@ -72,14 +77,17 @@ int main(int argc, char **argv)
             for(int i = 1; i < numranks; i++) {
                 killCode = 0;
                 MPI_Send(&killCode, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-                MPI_Send(&i1, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-                MPI_Send(&i2, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-                MPI_Send(boards, N*numSets, MPI_INT, i, 0, MPI_COMM_WORLD);
+                //MPI_Send(&i1, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+                //MPI_Send(&i2, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+                for(int j = 0; j < numSets; j++) {
+                    MPI_Send(boards[j], N, MPI_INT, i, 0, MPI_COMM_WORLD);
+                }
             }
 
             for(int i = 1; i < numranks; i++) {
-                MPI_Recv(newBoards, numSets*N, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        
+                for(int j = 0; j < numSets; j++) {
+                    MPI_Recv(newBoards[j], N, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                }
                 //newBoards = slave(N, numSets, boards[i1], boards[i2]);
                 for (int j = 0; j < numSets; j++) {
                     newConflictScores[j] = computeConflictScore(N, newBoards[j]);
@@ -100,8 +108,8 @@ int main(int argc, char **argv)
             }
         
 
-            if (iter % 1000 == 0) {
-                printf("Conflict Scores: ");
+            if (iter % 100 == 0) {
+                printf("Iter: %d  Conflict Scores: ", iter);
                 for (int i = 0; i < numSets; i++) {
                     printf("%d ", conflictScores[i]);
                 }
@@ -117,20 +125,31 @@ int main(int argc, char **argv)
                 MPI_Finalize();
                 return 0;
             }
-            int i1, i2;
-            MPI_Recv(&i1, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&i2, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(boards, numSets*N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            //printf("Entered Rank %d\n", rank);
+            int i1 = rand() % numSets;
+            int i2;
+            do {
+                i2 = rand() % numSets;
+            } while(i2 == i1);
+            //MPI_Recv(&i1, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            //MPI_Recv(&i2, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for(int i = 0; i < numSets; i++) {
+                MPI_Recv(boards[i], N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            }
+            //printf("At Rank: %d, Received Data\n", rank);
             slave(N, numSets, boards[i1], boards[i2], newBoards);
-            MPI_Send(newBoards, N*numSets, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            for(int i = 0; i < numSets; i++) {
+                MPI_Send(newBoards[i], numSets, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            }
         }
+
     }
     
     for (int i = 0; i < numSets; i++) {
         printf("Board %d | Conflict Score: %d\n", i, conflictScores[i]);
         printBoard(N, boards[i]);
     }
-    killCode = 0;
+    killCode = 1;
     for(int i = 0; i < numranks; i++) {
         MPI_Send(&killCode, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
     }
