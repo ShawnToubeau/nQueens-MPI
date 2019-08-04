@@ -21,7 +21,7 @@ int** slave(int *set1, int *set2, int N, int NUM_SETS) {
   // TODO: Incorporate the mutate functions
   // TODO: Use OMP to improve performance
 
-  mmc_sets = crossoverRandomSplit(N, set1, set2, .5);
+  mmc_sets = crossoverRandomSplit(N, set1, set2, .75);
   new_sets[0] = mmc_sets[0];
   new_sets[1] = mmc_sets[1];
   mutateMaxConflict(N, set1);
@@ -47,8 +47,8 @@ int main(int argc, char **argv)
   // Number of chess boards
   NUM_BOARDS = 4;
   // Size of the board
-  N = 8;
-  gen_div_factor = 0.5;
+  N = 4;
+  gen_div_factor = 0.75;
 
   srand(time(0));
 
@@ -107,15 +107,21 @@ int main(int argc, char **argv)
         // Checks if the new conflict score is better than the existing worse score
         if (newMinConf < currMaxConf) {
           int currMaxConflictIndex = getIndex(NUM_BOARDS, conflict_scores, currMaxConf);
+          
+
           // Replace the board
           for (int i = 0; i < N; i++) {
             sets[currMaxConflictIndex][i] = optimal_set[i];
           }
+          if(randDouble() < gen_div_factor) {
+              mutateTrulyRandom(N, sets[rand() % N]);
+          }
+
           // Update the conflict score
           conflict_scores[currMaxConflictIndex] = newMinConf;
         }
       }
-    }
+    } 
 
     printf("RUNNING LOOP: %d ; CONFLICT SCORES: ", loopNum);
     for(int i = 0; i < NUM_BOARDS; i++) {
