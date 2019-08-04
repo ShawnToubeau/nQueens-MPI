@@ -5,7 +5,7 @@ void mutate(int N, int* board);
 void mutateTrulyRandom(int N, int* board);
 void mutateMaxConflict(int N, int* board);
 
-int** crossoverRandomSplit(int N, int* board1, int* board2, double r);
+int** crossoverRandomSplit(int N, int* board1, int* board2, double r, int** res);
 
 
 #endif

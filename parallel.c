@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-int* slave(int N, int NUM_SETS, int* board1, int* board2) {
+void slave(int N, int NUM_SETS, int* board1, int* board2, int** newBoards) {
 
   // Holds the 4 newly mutated sets
-  int **newBoards = (int **)malloc(NUM_SETS * sizeof(int)); 
+  //int **newBoards = (int **)malloc(NUM_SETS * sizeof(int)); 
   int (*crs)[N] = malloc(sizeof(int[2][N]));
   // crs[0] = (int *)malloc(N * sizeof(int));
   // crs[1] = (int *)malloc(N * sizeof(int));
@@ -20,13 +20,14 @@ int* slave(int N, int NUM_SETS, int* board1, int* board2) {
 
   newBoards[0] = board1;
   newBoards[1] = board2;
-  mutateMaxConflict(N, newBoards[0]);
-  mutateMaxConflict(N, newBoards[1]);
-  crs = crossoverRandomSplit(N, board1, board2, 0.15);
-  newBoards[2] = crs[0];
-  newBoards[3] = crs[1];
+  mutateMaxConflict(N, newBoards[2]);
+  mutateMaxConflict(N, newBoards[3]);
+  //crs = 
+  crossoverRandomSplit(N, board1, board2, 0.15, newBoards);
+  //newBoards[2] = crs[0];
+  //newBoards[3] = crs[1];
 
-  return newBoards;
+  //return newBoards;
 }
 
 int main(int argc, char **argv)
@@ -120,18 +121,18 @@ int main(int argc, char **argv)
             MPI_Recv(&i1, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&i2, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(boards, numSets*N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            newBoards = slave(N, numSets, boards[i1], boards[i2]);
+            slave(N, numSets, boards[i1], boards[i2], newBoards);
             MPI_Send(newBoards, N*numSets, MPI_INT, 0, 0, MPI_COMM_WORLD);
         }
     }
     
-    killCode = 0;
-    for(int i = 0; i < numranks; i++) {
-        MPI_Send(&killCode, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-    }
     for (int i = 0; i < numSets; i++) {
         printf("Board %d | Conflict Score: %d\n", i, conflictScores[i]);
         printBoard(N, boards[i]);
+    }
+    killCode = 0;
+    for(int i = 0; i < numranks; i++) {
+        MPI_Send(&killCode, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
     }
 
     printf("Solved in %d iterations\n", iter);
