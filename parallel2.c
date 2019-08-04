@@ -42,8 +42,8 @@ int main(int argc, char **argv)
     srand(time(NULL));
 
     int numBoards = 4;
-    int N = 8;
-    double genDivFactor = 0.2;
+    int N = 64;
+    double genDivFactor = 0.3;
 
     // rank 0
     int** boards;
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
             conflictScores[i] = computeConflictScore(N, boards[i]);
             conflictScoreSum += conflictScores[i];
             printf("Board %d | Conflic Score: %d\n", i, conflictScores[i]);
-            printBoard(N, boards[i]);
+            // printBoard(N, boards[i]);
         }
     } else {
         board1 = (int *)malloc(N * sizeof(int));
@@ -80,12 +80,9 @@ int main(int argc, char **argv)
 
     MPI_Bcast(&conflictScoreSum, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    printf("Rank: %d | conflictScoreSum %d\n", rank, conflictScoreSum);
-
     int iter = 0;
     while (conflictScoreSum != 0)
     {
-        // printf("Iteration: %d\n", iter);
         if (rank == 0)
         {
             int i1, i2;
@@ -96,13 +93,8 @@ int main(int argc, char **argv)
                 {
                     i2 = rand() % numBoards;
                 } while (i2 == i1);
-                // printf("From Rank 0 - Printing Boards\n");
                 MPI_Send(boards[i1], N, MPI_INT, i, 0, MPI_COMM_WORLD);
-                // printf("B1: \n");
-                // printBoard(N, boards[i1]);
                 MPI_Send(boards[i2], N, MPI_INT, i, 1, MPI_COMM_WORLD);
-                // printf("B2: \n");
-                // printBoard(N, boards[i2]);
             }
             for (int i = 1; i < numranks; i++)
             {
@@ -111,12 +103,12 @@ int main(int argc, char **argv)
 
                 for (int j = 0; j < numBoards; j++)
                 {
-                    if (bestConflictScore < conflictScores[i])
+                    if (bestConflictScore < conflictScores[j])
                     {
-                        boards[i] = bestBoard;
-                        conflictScoreSum -= conflictScores[i];
+                        boards[j] = bestBoard;
+                        conflictScoreSum -= conflictScores[j];
                         conflictScoreSum += bestConflictScore;
-                        conflictScores[i] = bestConflictScore;
+                        conflictScores[j] = bestConflictScore;
                     }
                 }
             }
@@ -137,12 +129,7 @@ int main(int argc, char **argv)
         else
         {
             MPI_Recv(board1, N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            // printf("From rank %d\n", rank);
-            // printf("B1\n");
-            // printBoard(N, board1);
             MPI_Recv(board2, N, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            // printf("B2\n");
-            // printBoard(N, board2);
             newBoards = slave(N, board1, board2);
 
             int c;
@@ -160,16 +147,21 @@ int main(int argc, char **argv)
         }
 
         MPI_Bcast(&conflictScoreSum, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
         iter++;
     }
 
-    for (int i = 0; i < numBoards; i++)
-    {
-        printf("Board %d | Conflic Score: %d\n", i, conflictScores[i]);
-        printBoard(N, boards[i]);
+    if (rank == 0) {
+        for (int i = 0; i < numBoards; i++)
+        {
+            printf("Board %d | Conflic Score: %d\n", i, conflictScores[i]);
+            // printBoard(N, boards[i]);
+        }
+        printf("Solved in %d iterations\n", iter);
     }
 
-    printf("Solved in %d iterations\n", iter);
+    MPI_Abort(MPI_COMM_WORLD, 0);
+    // MPI_Finalize();
 
-    MPI_Finalize();
+    return 0;
 }
