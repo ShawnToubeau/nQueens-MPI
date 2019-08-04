@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "mutate.h"
 #include "conflict.h"
 #include "assistFunctions.h"
@@ -61,7 +62,7 @@ void mutateMaxConflict(int N, int* board) {
   int maxConflictIndex = getIndex(N, conflictsPerQueen, maxConflict);
 
   int posC = 0;
-  int minConflict = INT8_MAX;
+  int minConflict = INT_MAX;
   int conflict, minConflictIndex;
 
   while (posC < N) {
