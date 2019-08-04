@@ -6,13 +6,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-int** slave(int N, int NUM_SETS, int* board1, int* board2) {
+int* slave(int N, int NUM_SETS, int* board1, int* board2) {
 
   // Holds the 4 newly mutated sets
   int **newBoards = (int **)malloc(NUM_SETS * sizeof(int)); 
-  int **crs = (int **)malloc(2 * N * sizeof(int));
-  crs[0] = (int *)malloc(N * sizeof(int));
-  crs[1] = (int *)malloc(N * sizeof(int));
+  int (*crs)[N] = malloc(sizeof(int[2][N]));
+  // crs[0] = (int *)malloc(N * sizeof(int));
+  // crs[1] = (int *)malloc(N * sizeof(int));
 
   for (int i = 0; i < NUM_SETS; i++) {
       newBoards[i] = (int *)malloc(N * sizeof(int));
@@ -80,16 +80,16 @@ int main(int argc, char **argv)
                 MPI_Recv(newBoards, numSets*N, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         
                 //newBoards = slave(N, numSets, boards[i1], boards[i2]);
-                for (int i = 0; i < numSets; i++) {
-                    newConflictScores[i] = computeConflictScore(N, newBoards[i]);
+                for (int j = 0; j < numSets; j++) {
+                    newConflictScores[j] = computeConflictScore(N, newBoards[j]);
                 }
 
-                for (int i = 0; i < numSets; i++) {
+                for (int p = 0; p < numSets; p++) {
                     int maxExistingConflictScore = max(numSets, conflictScores);
-                    if (newConflictScores[i] < maxExistingConflictScore) {
+                    if (newConflictScores[p] < maxExistingConflictScore) {
                         int j = getIndex(numSets, conflictScores, maxExistingConflictScore);
-                        boards[j] = newBoards[i];
-                        conflictScores[j] = newConflictScores[i];
+                        boards[j] = newBoards[p];
+                        conflictScores[j] = newConflictScores[p];
                     }
                 }
 

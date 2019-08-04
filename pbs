@@ -8,5 +8,5 @@
 #PBS -N NQueens
 #PBS -j oe
 
-cd /home/razat/nQueens-MPI
+cd /home/toubeaus/nQueens-MPI
 mpiexec -np 2 --map-by ppr:1:node --hostfile $PBS_NODEFILE ./parallel.x
