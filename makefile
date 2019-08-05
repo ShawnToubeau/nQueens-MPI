@@ -6,9 +6,8 @@ test:
 program1: main.c
 	mpicc -fopenmp -o main.x main.c assistFunctions.c conflict.c
 
-program2: parallel2.c
-	mpicc -o parallel.x parallel2.c assistFunctions.c conflict.c mutate.c
-
+parallel: parallel.c
+	mpicc -o parallel.x parallel.c assistFunctions.c conflict.c mutate.c
 
 clean:
 	rm *.x
