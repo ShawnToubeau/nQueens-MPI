@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     srand(time(NULL));
 
     int numBoards = 4;
-    int N = 64;
+    int N = 8;
     double genDivFactor = 0.3;
 
     // rank 0
@@ -83,6 +83,11 @@ int main(int argc, char **argv)
     int iter = 0;
     while (conflictScoreSum != 0)
     {
+        // MPI_Bcast(&conflictScoreSum, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        // if (conflictScoreSum == 0) {
+        //     break;
+        // }
+
         if (rank == 0)
         {
             int i1, i2;
@@ -111,6 +116,8 @@ int main(int argc, char **argv)
                         conflictScores[j] = bestConflictScore;
                     }
                 }
+
+                
             }
             if (randDouble() < genDivFactor)
             {
@@ -144,12 +151,16 @@ int main(int argc, char **argv)
             }
             MPI_Send(bestBoard, N, MPI_INT, 0, 0, MPI_COMM_WORLD);
             MPI_Send(&bestConflictScore, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
+
         }
 
         MPI_Bcast(&conflictScoreSum, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         iter++;
     }
+
+    printf("Rank %d roger roger\n", rank);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     if (rank == 0) {
         for (int i = 0; i < numBoards; i++)
@@ -159,9 +170,5 @@ int main(int argc, char **argv)
         }
         printf("Solved in %d iterations\n", iter);
     }
-
-    MPI_Abort(MPI_COMM_WORLD, 0);
-    // MPI_Finalize();
-
-    return 0;
+    MPI_Finalize();
 }
