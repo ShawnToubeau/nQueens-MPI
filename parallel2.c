@@ -7,29 +7,13 @@
 #include <time.h>
 #include "mpi.h"
 
-int **slave(int N, int *board1, int *board2)
+void slave(int N, int *board1, int *board2, int** newBoards)
 {
-
-    // Holds the 4 newly mutated sets
-    int **newBoards = (int **)malloc(4 * sizeof(int));
-    int **crs = (int **)malloc(2 * N * sizeof(int));
-    crs[0] = (int *)malloc(N * sizeof(int));
-    crs[1] = (int *)malloc(N * sizeof(int));
-
-    for (int i = 0; i < 4; i++)
-    {
-        newBoards[i] = (int *)malloc(N * sizeof(int));
-    }
-
-    newBoards[0] = board1;
-    newBoards[1] = board2;
-    mutateMaxConflict(N, newBoards[0]);
-    mutateMaxConflict(N, newBoards[1]);
-    crs = crossoverRandomSplit(N, board1, board2, 0.15);
-    newBoards[2] = crs[0];
-    newBoards[3] = crs[1];
-
-    return newBoards;
+    crossoverRandomSplit(N, board1, board2, 0.15, newBoards);
+    newBoards[2] = board1;
+    newBoards[3] = board2;
+    mutateMaxConflict(N, newBoards[2]);
+    mutateMaxConflict(N, newBoards[3]);
 }
 
 int main(int argc, char **argv)
@@ -42,40 +26,38 @@ int main(int argc, char **argv)
     srand(time(NULL));
 
     int numBoards = 4;
-    int N = 8;
+    int N = 64;
     double genDivFactor = 0.3;
 
     // rank 0
-    int** boards;
-    int *conflictScores;
-    int *bestBoard;
+    int** boards = (int **)malloc(numBoards * N * sizeof(int));
+    int *conflictScores = (int *)malloc(numBoards * sizeof(int));
+    int *bestBoard = (int *)malloc(N * sizeof(int));
     // else
-    int *board1;
-    int *board2;
-    int **newBoards;
+    int *board1 = (int *)malloc(N * sizeof(int));
+    int *board2 = (int *)malloc(N * sizeof(int));
+    int **newBoards = (int **)malloc(4 * N * sizeof(int));
     int conflictScoreSum = 0;
+
+    for (int i = 0; i < numBoards; i++) {
+        boards[i] = (int *)malloc(N * sizeof(int));
+    }
+    for (int i = 0; i < 4; i++) {
+        newBoards[i] = (int *)malloc(N * sizeof(int));
+    }
 
     if (rank == 0)
     {
-        boards = (int **)malloc(numBoards * N * sizeof(int));
-        conflictScores = (int *)malloc(numBoards * sizeof(int));
-
         for (int i = 0; i < numBoards; i++)
         {
-            boards[i] = (int *)malloc(N * sizeof(int));
             fillRandom(N, boards[i]);
             conflictScores[i] = computeConflictScore(N, boards[i]);
             conflictScoreSum += conflictScores[i];
             printf("Board %d | Conflic Score: %d\n", i, conflictScores[i]);
             // printBoard(N, boards[i]);
         }
-    } else {
-        board1 = (int *)malloc(N * sizeof(int));
-        board2 = (int *)malloc(N * sizeof(int));
-        newBoards = (int **)malloc(4 * N * sizeof(int));
     }
 
-    bestBoard = (int *)malloc(N * sizeof(int));
     int bestConflictScore = INT_MAX;
 
     MPI_Bcast(&conflictScoreSum, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -83,11 +65,6 @@ int main(int argc, char **argv)
     int iter = 0;
     while (conflictScoreSum != 0)
     {
-        // MPI_Bcast(&conflictScoreSum, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        // if (conflictScoreSum == 0) {
-        //     break;
-        // }
-
         if (rank == 0)
         {
             int i1, i2;
@@ -137,7 +114,8 @@ int main(int argc, char **argv)
         {
             MPI_Recv(board1, N, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(board2, N, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            newBoards = slave(N, board1, board2);
+
+            slave(N, board1, board2, newBoards);
 
             int c;
             for (int i = 0; i < 4; i++)
@@ -170,5 +148,8 @@ int main(int argc, char **argv)
         }
         printf("Solved in %d iterations\n", iter);
     }
+
     MPI_Finalize();
+
+    exit(0);
 }
