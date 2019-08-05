@@ -21,6 +21,8 @@ int main(int argc, char **argv)
     int N = 64;
     double genDivFactor = 0.3;
 
+    time_t startTime = time(NULL);
+
     int** boards = (int **)malloc(numSets * N * sizeof(int));
     int** newBoards = (int **)malloc(4 * N * sizeof(int));
 
@@ -31,7 +33,7 @@ int main(int argc, char **argv)
         boards[i] = (int *)malloc(N * sizeof(int));
         fillRandom(N, boards[i]);
         conflictScores[i] = computeConflictScore(N, boards[i]);
-        printf("Board %d | Conflic Score: %d\n", i, conflictScores[i]);
+        printf("Board %d | Conflict Score: %d\n", i, conflictScores[i]);
         // printBoard(N, boards[i]);
     }
 
@@ -76,10 +78,12 @@ int main(int argc, char **argv)
         iter++;
     }
 
+    time_t endTime = time(NULL);
+
     for (int i = 0; i < numSets; i++) {
-        printf("Board %d | Conflic Score: %d\n", i, conflictScores[i]);
+        printf("Board %d | Conflict Score: %d\n", i, conflictScores[i]);
         // printBoard(N, boards[i]);
     }
 
-    printf("Solved in %d iterations\n", iter);
+    printf("Solved in %d iterations in %li seconds\n", iter, endTime - startTime);
 }
