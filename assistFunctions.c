@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 #include "assistFunctions.h"
 
 int min(int N, int* l) {
-  int m = l[0];
+  int m = INT_MAX;
   for (int i = 1; i < N; i++) {
     if (l[i] < m) m = l[i];
   }
@@ -11,7 +12,7 @@ int min(int N, int* l) {
 }
 
 int max(int N, int* l) {
-  int m = l[0];
+  int m = INT_MIN;
   for (int i = 0; i < N; i++) {
     if (l[i] > m) m = l[i];
   }
